@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Kotlin Coroutines Tests</string>
+
+    <string name="test_coroutines_button">Test coroutines</string>
+    <string name="test_asyncs_in_coroutine_button">Test asyncs in coroutine</string>
+    <string name="test_rxjava_button">Test RxJava</string>
+</resources>
