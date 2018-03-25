@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val KOTLIN_COROUTINES_TESTS_TAG = "KCT"
-        private const val TEST_ITERATIONS_COUNT = 5000
+        private const val TEST_ITERATIONS_COUNT = 10000
     }
 
     private var counter = AtomicInteger()
@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
         startTest(testName)
 
-        for (item in testArray) {
+        for (i in 1..TEST_ITERATIONS_COUNT) {
             launch(UI) {
                 async(CommonPool) { stubAsyncFunc() }.await()
                 checkTestEnd(testName)
