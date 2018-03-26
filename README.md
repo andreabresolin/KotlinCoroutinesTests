@@ -8,7 +8,10 @@ The main purpose of this project is to test:
 - CPU usage
 - memory usage
 
-CPU and memory usage can be tested with the help of the [Android Profiler](https://developer.android.com/studio/profile/index.html) in Android Studio.
+The CPU and memory usage can be tested with the help of the [Android Profiler](https://developer.android.com/studio/profile/index.html) in Android Studio.
+
+An analysis of some of the results obtained with this code can be found in the Medium post [Kotlin coroutines vs RxJava: an initial performance test](https://medium.com/@andrea.bresolin/kotlin-coroutines-vs-rxjava-an-initial-performance-test-68160cfc6723).
+
 
 ## License
 
