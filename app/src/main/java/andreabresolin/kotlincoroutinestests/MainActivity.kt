@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
 
         startTest(testName)
 
-        val subscribeScheduler = Schedulers.io()
+        val subscribeScheduler = Schedulers.computation()
         val observeScheduler = AndroidSchedulers.mainThread()
 
         for (i in 1..TEST_ITERATIONS_COUNT) {
