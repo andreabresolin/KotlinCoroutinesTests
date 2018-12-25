@@ -32,7 +32,7 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val KOTLIN_COROUTINES_TESTS_TAG = "KCT"
-        private const val TEST_ITERATIONS_COUNT = 10
+        private const val TEST_ITERATIONS_COUNT = 10000
     }
 
     private var counter = AtomicInteger()
@@ -59,11 +59,10 @@ class MainActivity : AppCompatActivity() {
 
         for (i in 1..TEST_ITERATIONS_COUNT) {
 
-            GlobalScope.launch {
-                async { stubAsyncFunc() }
-                checkTestEnd(testName)
-            }
-
+//            launch(UI) {
+//                async(CommonPool) { stubAsyncFunc() }.await()
+//                checkTestEnd(testName)
+//            }
         }
     }
 
@@ -94,14 +93,9 @@ class MainActivity : AppCompatActivity() {
         val subscribeScheduler = Schedulers.computation()
         val observeScheduler = AndroidSchedulers.mainThread()
 
-        observableStubAsync().subscribeOn(subscribeScheduler)
-                .observeOn(observeScheduler)
-                .subscribe({
-                    checkTestEnd(testName)
-                },{
-                  print(it)
-                })
+          observableStubAsync().subscribeOn(subscribeScheduler).observeOn(observeScheduler).subscribe {
 
+          }
     }
 
     private fun stubAsyncFunc() {
@@ -114,6 +108,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkTestEnd(testName: String) {
+
+        Log.i("testing ending", " -- checking -- ")
+
         counter.getAndUpdate {
             if (it == TEST_ITERATIONS_COUNT) {
                 val testTime = System.currentTimeMillis() - testStartTime
@@ -129,12 +126,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun observableStubAsync(): Observable<Int> {
         return Observable.create {
+
             for (i in 1..TEST_ITERATIONS_COUNT) {
                 counter.incrementAndGet()
-                checkTestEnd("rx Test")
             }
 
-            return@create
+            checkTestEnd("rxTest")
+
         }
     }
 
