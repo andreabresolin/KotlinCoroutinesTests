@@ -20,13 +20,12 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import io.reactivex.Observable
+import io.reactivex.ObservableEmitter
+import io.reactivex.ObservableOnSubscribe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicInteger
 
 class MainActivity : AppCompatActivity() {
@@ -59,10 +58,11 @@ class MainActivity : AppCompatActivity() {
         startTest(testName)
 
         for (i in 1..TEST_ITERATIONS_COUNT) {
-            launch(UI) {
-                async(CommonPool) { stubAsyncFunc() }.await()
-                checkTestEnd(testName)
-            }
+
+//            launch(UI) {
+//                async(CommonPool) { stubAsyncFunc() }.await()
+//                checkTestEnd(testName)
+//            }
         }
     }
 
@@ -71,14 +71,18 @@ class MainActivity : AppCompatActivity() {
 
         startTest(testName)
 
-        launch(UI) {
+        GlobalScope.launch {
             testArray
-                    .map { async(CommonPool) { stubAsyncFunc() } }
+                    .map { async { stubAsyncFunc() } }
                     .map {
                         it.await()
                         checkTestEnd(testName)
                     }
         }
+
+
+//        launch(UI) {
+//        }
     }
 
     private fun onTestRxJavaButtonClick() {
@@ -89,12 +93,9 @@ class MainActivity : AppCompatActivity() {
         val subscribeScheduler = Schedulers.computation()
         val observeScheduler = AndroidSchedulers.mainThread()
 
-        for (i in 1..TEST_ITERATIONS_COUNT) {
-            Observable.fromCallable { stubAsyncFunc() }
-                    .subscribeOn(subscribeScheduler)
-                    .observeOn(observeScheduler)
-                    .subscribe { checkTestEnd(testName) }
-        }
+          observableStubAsync().subscribeOn(subscribeScheduler).observeOn(observeScheduler).subscribe {
+
+          }
     }
 
     private fun stubAsyncFunc() {
@@ -107,6 +108,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkTestEnd(testName: String) {
+
+        Log.i("testing ending", " -- checking -- ")
+
         counter.getAndUpdate {
             if (it == TEST_ITERATIONS_COUNT) {
                 val testTime = System.currentTimeMillis() - testStartTime
@@ -117,6 +121,18 @@ class MainActivity : AppCompatActivity() {
             }
 
             return@getAndUpdate it
+        }
+    }
+
+    private fun observableStubAsync(): Observable<Int> {
+        return Observable.create {
+
+            for (i in 1..TEST_ITERATIONS_COUNT) {
+                counter.incrementAndGet()
+            }
+
+            checkTestEnd("rxTest")
+
         }
     }
 
