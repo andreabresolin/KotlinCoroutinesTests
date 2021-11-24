@@ -16,17 +16,14 @@
 
 package andreabresolin.kotlincoroutinestests
 
+import andreabresolin.kotlincoroutinestests.databinding.ActivityMainBinding
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicInteger
 
 class MainActivity : AppCompatActivity() {
@@ -40,17 +37,21 @@ class MainActivity : AppCompatActivity() {
     private var testStartTime: Long = 0
     private val testArray = IntArray(TEST_ITERATIONS_COUNT)
 
+    private lateinit var viewBinding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
+        viewBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
         setupListeners()
     }
 
     private fun setupListeners() {
-        testCoroutinesButton.setOnClickListener { onTestCoroutinesButtonClick() }
-        testAsyncsInCoroutineButton.setOnClickListener { onTestAsyncsInCoroutineButtonClick() }
-        testRxJavaButton.setOnClickListener { onTestRxJavaButtonClick() }
+        with(viewBinding) {
+            testCoroutinesButton.setOnClickListener { onTestCoroutinesButtonClick() }
+            testAsyncsInCoroutineButton.setOnClickListener { onTestAsyncsInCoroutineButtonClick() }
+            testRxJavaButton.setOnClickListener { onTestRxJavaButtonClick() }
+        }
     }
 
     private fun onTestCoroutinesButtonClick() {
@@ -58,9 +59,10 @@ class MainActivity : AppCompatActivity() {
 
         startTest(testName)
 
+        val scope = CoroutineScope(Job() + Dispatchers.Default)
         for (i in 1..TEST_ITERATIONS_COUNT) {
-            launch(UI) {
-                async(CommonPool) { stubAsyncFunc() }.await()
+            scope.launch {
+                val result = async { stubAsyncFunc() }
                 checkTestEnd(testName)
             }
         }
@@ -70,14 +72,14 @@ class MainActivity : AppCompatActivity() {
         val testName = "Asyncs in coroutine test"
 
         startTest(testName)
-
-        launch(UI) {
+        val scope = CoroutineScope(Job() + Dispatchers.Default)
+        scope.launch {
             testArray
-                    .map { async(CommonPool) { stubAsyncFunc() } }
-                    .map {
-                        it.await()
-                        checkTestEnd(testName)
-                    }
+                .map { async { stubAsyncFunc() } }
+                .map {
+                    it.await()
+                    checkTestEnd(testName)
+                }
         }
     }
 
@@ -90,10 +92,10 @@ class MainActivity : AppCompatActivity() {
         val observeScheduler = AndroidSchedulers.mainThread()
 
         for (i in 1..TEST_ITERATIONS_COUNT) {
-            Observable.fromCallable { stubAsyncFunc() }
-                    .subscribeOn(subscribeScheduler)
-                    .observeOn(observeScheduler)
-                    .subscribe { checkTestEnd(testName) }
+            val disposable = Observable.fromCallable { stubAsyncFunc() }
+                .subscribeOn(subscribeScheduler)
+                .observeOn(observeScheduler)
+                .subscribe { checkTestEnd(testName) }
         }
     }
 
