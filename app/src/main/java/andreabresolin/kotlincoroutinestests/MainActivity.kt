@@ -62,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         val scope = CoroutineScope(Job() + Dispatchers.Default)
         for (i in 1..TEST_ITERATIONS_COUNT) {
             scope.launch {
-                val result = async { stubAsyncFunc() }
+                val result = async { stubAsyncFunc() }.await()
                 checkTestEnd(testName)
             }
         }
